@@ -26,3 +26,9 @@ README_personal.md
 
 # Visual png files
 src/visuals
+
+# pycache
+**/__pycache__/
+
+# skip powerpoint
+**/*.pptx
