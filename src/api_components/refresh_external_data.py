@@ -62,40 +62,40 @@ df_weer_leiden.rename(columns=lowercase_column_names, inplace=True)
 df_weer_leiden.to_excel('./data/weerdata_leiden.xlsx',
                         index=False, sheet_name='weerdata')
 
-# ------------------------------------------ #
-# ---------- Senor dim informatie ---------- #
-# ------------------------------------------ #
-# laad sensor id dictionairy. Deze bevat per device_name de bijbehoren device_ic
-device_name_ids = get_parameters()
-df_sensor_id_name = pd.DataFrame.from_dict(device_name_ids, orient='index', columns=[
-                                           'device_id']).reset_index().set_index('device_id')
-df_sensor_id_name.columns = ['device_name']
+# # ------------------------------------------ #
+# # ---------- Senor dim informatie ---------- #
+# # ------------------------------------------ #
+# # laad sensor id dictionairy. Deze bevat per device_name de bijbehoren device_ic
+# device_name_ids = get_parameters()
+# df_sensor_id_name = pd.DataFrame.from_dict(device_name_ids, orient='index', columns=[
+#                                            'device_id']).reset_index().set_index('device_id')
+# df_sensor_id_name.columns = ['device_name']
 
-df_sensor_info_org = pd.read_excel(
-    './data/Water in the cloud (Responses).xlsx')
-sensor_dim_cols = ['locatie', 'device_name', 'datum_geplaatst', 'datum_weggehaald',
-                   'diepte_plaatsing', 'leeftijd_plant', 'soort_plant', 'locatie_regio',
-                   'extra_omschrijving']
+# df_sensor_info_org = pd.read_excel(
+#     './data/Water in the cloud (Responses).xlsx')
+# sensor_dim_cols = ['locatie', 'device_name', 'datum_geplaatst', 'datum_weggehaald',
+#                    'diepte_plaatsing', 'leeftijd_plant', 'soort_plant', 'locatie_regio',
+#                    'extra_omschrijving']
 
-df_sensor_info_org.columns = ['timestamp', 'device_name', 'locatie', 'omschrijving', 'foto_1', 'foto_2',
-                              'diepte_plaatsing', 'lat_lon', 'located_datum_old', 'datum_geplaatst', 'located_tijd',
-                              'datum_weggehaald', 'foto_3', 'foto_4',
-                              'leeftijd_plant', 'soort_plant', 'locatie_regio', 'extra_omschrijving']
+# df_sensor_info_org.columns = ['timestamp', 'device_name', 'locatie', 'omschrijving', 'foto_1', 'foto_2',
+#                               'diepte_plaatsing', 'lat_lon', 'located_datum_old', 'datum_geplaatst', 'located_tijd',
+#                               'datum_weggehaald', 'foto_3', 'foto_4',
+#                               'leeftijd_plant', 'soort_plant', 'locatie_regio', 'extra_omschrijving']
 
-df_dim_sensor = df_sensor_info_org[sensor_dim_cols].copy()
-df_dim_sensor['old'] = pd.Series(
-    np.where(df_dim_sensor['locatie'].str[-4:-1] == 'old', 'Yes', 'No'))
+# df_dim_sensor = df_sensor_info_org[sensor_dim_cols].copy()
+# df_dim_sensor['old'] = pd.Series(
+#     np.where(df_dim_sensor['locatie'].str[-4:-1] == 'old', 'Yes', 'No'))
 
-df_dim_sensor['device_name_org'] = df_dim_sensor['device_name']
-# df_dim_sensor['device_name'] = 'firefly2_' + df_dim_sensor['device_name'].str[-4:]
-df_dim_sensor = df_dim_sensor.merge(
-    df_sensor_id_name.reset_index(), how='left')
-df_dim_sensor['locatie'] = df_dim_sensor['locatie'] + \
-    '_' + df_dim_sensor['diepte_plaatsing'].str[:2]
+# df_dim_sensor['device_name_org'] = df_dim_sensor['device_name']
+# # df_dim_sensor['device_name'] = 'firefly2_' + df_dim_sensor['device_name'].str[-4:]
+# df_dim_sensor = df_dim_sensor.merge(
+#     df_sensor_id_name.reset_index(), how='left')
+# df_dim_sensor['locatie'] = df_dim_sensor['locatie'] + \
+#     '_' + df_dim_sensor['diepte_plaatsing'].str[:2]
 
-large_date = pd.to_datetime(pd.Timestamp.max.date())
-df_dim_sensor['datum_weggehaald'] = df_dim_sensor['datum_weggehaald'].fillna(
-    large_date)
+# large_date = pd.to_datetime(pd.Timestamp.max.date())
+# df_dim_sensor['datum_weggehaald'] = df_dim_sensor['datum_weggehaald'].fillna(
+#     large_date)
 
-df_dim_sensor.to_excel('./data/dim_sensor.xlsx',
-                       index=False, sheet_name='dim_sensor')
+# df_dim_sensor.to_excel('./data/dim_sensor.xlsx',
+#                        index=False, sheet_name='dim_sensor')
