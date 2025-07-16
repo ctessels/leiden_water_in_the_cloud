@@ -5,7 +5,7 @@ def get_all_data():
 
     # Laad dim_sensor
     df_dim_sensor = pd.read_excel(
-        './data/dim_sensor_documentation.xlsx', sheet_name='dim_sensor')
+        './data/dim_sensor_documentation.xlsx', sheet_name='dim_sensor_fase_1')
 
     # Laad fact_sensor
     columns_to_load = ['gateway_receive_time', 'device', 'value']
