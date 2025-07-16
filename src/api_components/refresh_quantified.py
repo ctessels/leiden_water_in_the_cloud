@@ -72,6 +72,10 @@ max_gateway_list = [df_max_gateway_permittivity, df_max_gateway_battery]
 c = -1
 for url_path in url_list:
     c += 1
+    if c == 0:
+        print('Start ophalen van permittivity data')
+    else:
+        print('Start ophalen van battery data')
 
     if resp == 401:
         print('Autorization failed')
@@ -140,13 +144,13 @@ def quantified_to_dataframe(df):
 
     return df
 
-
-df_results_permittivity = quantified_to_dataframe(df_final_permittivity)
-df_results_battery = quantified_to_dataframe(df_final_battery)
-
-df_permittivity_update = pd.concat([df_permittivity, df_results_permittivity])
-df_battery_update = pd.concat([df_battery, df_results_battery])
-
-df_permittivity_update.to_excel(
+if len(df_final_permittivity) > 0:
+    df_results_permittivity = quantified_to_dataframe(df_final_permittivity)
+    df_permittivity_update = pd.concat([df_permittivity, df_results_permittivity])
+    df_permittivity_update.to_excel(
     './data/Permittivity_updated.xlsx', index=False)
-df_battery_update.to_excel('./data/Battery_updated.xlsx', index=False)
+
+if len(df_final_battery) > 0:
+    df_results_battery = quantified_to_dataframe(df_final_battery)
+    df_battery_update = pd.concat([df_battery, df_results_battery])
+    df_battery_update.to_excel('./data/Battery_updated.xlsx', index=False)
