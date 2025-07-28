@@ -56,12 +56,12 @@ source .venv/bin/activate  # Voor macOS
 .venv\Scripts\activate     # Voor Windows
 ```
 
-3. Installeer dependencies:
+4. Installeer dependencies:
 ```bash
 uv pip install -r requirements.txt
 ```
 
-4. Maak een `.env` bestand aan in de projectroot met de volgende inhoud:
+5. Maak een `.env` bestand aan in de projectroot met de volgende inhoud:
 ```
 EMAIL=jouw_quantified_email
 PASSWORD=jouw_quantified_wachtwoord
