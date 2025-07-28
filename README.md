@@ -33,10 +33,25 @@ Dit project bestaat uit verschillende componenten:
 git clone https://github.com/joramspan91/leiden_water_in_the_cloud
 ```
 
-2. Maak een virtuele omgeving aan en activeer deze met uv:
+2. Installeer `uv` als je dit nog niet hebt:
+
+Voor macOS:
+- Install brew on Mac (als je dit nog niet hebt):
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+source ~/.zshrc
+brew --version
+brew install uv
+```
+
+Voor Windows:
+Zie > https://docs.astral.sh/uv/getting-started/installation/
+
+3. Maak een virtuele omgeving aan en activeer deze met uv:
 ```bash
 uv venv
-source .venv/bin/activate  # Voor Unix/macOS
+source .venv/bin/activate  # Voor macOS
 # of
 .venv\Scripts\activate     # Voor Windows
 ```
