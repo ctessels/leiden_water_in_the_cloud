@@ -29,7 +29,7 @@ if response.status_code == 200:
 else:
     print("Failed to retrieve token:", response.status_code, response.text)
 
-# laad sensor id dictionairy. Deze bevat per device_name de bijbehoren device_ic
+# laad sensor id dictionary. Deze bevat per device_name de bijbehoren device_ic
 device_name_ids = get_parameters()
 df_sensor_id_name = pd.DataFrame.from_dict(device_name_ids, orient='index', columns=[
                                            'device_id']).reset_index().set_index('device_id')
