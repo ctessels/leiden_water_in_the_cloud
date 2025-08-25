@@ -1,6 +1,13 @@
 import requests
 from secrets import secrets
 
+"""
+TODO:
+Data ophalen en wegschrijven naar SQLite
+Eerste data-analyse
+Integratie met vorige sensoren
+"""
+
 # The URL for the token API
 login_url = 'https://insight.quantified.eu/api/token/login/'
  
