@@ -2,9 +2,7 @@ Commit via ssh terminal:
 	eval "$(ssh-agent -s)"
 	 
 	ssh-add ~/.ssh/id_ed25519
-	 
-	git add .
-	 
-	git commit -m "<your message>"
-	 
-	git push
+	
+	[Alle files toevoegen via pycharm en een berichtje schrijven, dan commit]
+	
+	git push (Misschien ook via pycharm?)
