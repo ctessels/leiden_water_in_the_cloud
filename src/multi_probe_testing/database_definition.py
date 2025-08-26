@@ -1,5 +1,4 @@
 import sqlite3
-from idlelib import query
 
 conn = sqlite3.connect('database.db')
 cursor = conn.cursor()
@@ -29,12 +28,14 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS FactSensorData (
     row_id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id INTEGER NOT NULL,
+    probe_number INTEGER NOT NULL,
     timestamp DATETIME NOT NULL,
     gateway_receive_time DATETIME,
     temperature REAL,
     relative_permittivity REAL,
     electric_conductivity REAL,
     FOREIGN KEY (device_id) REFERENCES DimSensor (device_id)
+    UNIQUE(device_id, probe_number, timestamp)
 );
 """)
 
@@ -256,7 +257,6 @@ if not exists:
     conn.commit()
 else:
     print('Initial data already exists')
-
 
 
 import query_helper as qh
