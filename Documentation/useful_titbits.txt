@@ -5,4 +5,4 @@ Commit via ssh terminal:
 	
 	[Alle files toevoegen via pycharm en een berichtje schrijven, dan commit]
 	
-	git push (Misschien ook via pycharm?)
+	git push
