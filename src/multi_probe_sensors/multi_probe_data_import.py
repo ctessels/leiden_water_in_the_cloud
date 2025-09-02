@@ -1,3 +1,7 @@
+"""
+Imports multi probe data, and single probe data of sensors placed at the same time as multi probe sensors.
+"""
+
 import sqlite3
 from datetime import datetime, timezone
 import requests
@@ -5,12 +9,10 @@ from passwordnemail import secrets
 
 """
 TODO:
-Binnenhalen data enkele probes
-Eerste data-analyse
 Binnenhalen van weerdata
-Warnings voor batterij en missende data
+Eerste data-analyse
 Weerdata integreren in analyse
-Integratie van data-analyse met vorige sensoren
+Integratie van data-analyse met vorige sensoren (alleen data vanaf 2025-08)
 Integratie van multi-sensor code met rest van codebase
 """
 

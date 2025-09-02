@@ -1,12 +1,8 @@
 import requests
 import zipfile
 import pandas as pd
-import numpy as np
 from datetime import datetime
-from default_parameters import get_parameters
 from io import BytesIO
-import time
-import pytz
 
 # -------------------------- #
 # ---------- KNMI ---------- #
