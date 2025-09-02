@@ -1,7 +1,5 @@
 def get_parameters():
 
-    # token = "01dffd5c1dc7d5a63b06c10a63db051fb099a4690f3430c597e5a2b7cef44aab"
-
     device_name_ids_all = {
         "FF1 0-0004": 93,
         "FF1 0-0027": 54,

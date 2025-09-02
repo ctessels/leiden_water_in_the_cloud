@@ -8,8 +8,8 @@ from passwordnemail import secrets
 """
 TODO:
 Eerste data-analyse
-Warnings voor batterij en missende data
 Binnenhalen van weerdata
+Warnings voor batterij en missende data
 Weerdata integreren in analyse
 Integratie van data-analyse met vorige sensoren
 Integratie van multi-sensor code met rest van codebase
@@ -70,16 +70,17 @@ headers = {
 }
 
 # Get response
+print("Fetching data...")
 response = requests.get(multi_soil_probe_events_endpoint, headers=headers, params=params)
 if response.status_code == 200:
     data = response.json()
     records = data.get("results", [])
-    print("Got", len(records), "results\n")
+    print("Got", len(records), "results")
     if len(records) > record_limit:
-        print(f"Records limit reached\n")
+        print(f"Records limit reached")
 else:
     print("Error:", response.status_code, response.text)
-    exit('Bad response\n')
+    exit('Bad response')
 
 # Format response to FactSensorData table
 insert_sql = """
@@ -105,5 +106,6 @@ values = [
 cursor.executemany(insert_sql, values)
 rows_inserted = cursor.rowcount
 conn.commit()
-print(f'{rows_inserted} rows inserted\n')
+print(f'{rows_inserted} rows inserted')
 conn.close()
+print("Data fetched")
