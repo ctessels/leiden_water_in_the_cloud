@@ -28,7 +28,7 @@ def get_data(endpoint, api_headers, api_params):
         exit('Bad response')
 
 # Connect to sqlite3 database
-conn = sqlite3.connect('database.db')
+conn = sqlite3.connect('multi_probe_data/database.db')
 cursor = conn.cursor()
 
 # The URL for the token API
@@ -66,7 +66,7 @@ rows = cursor.fetchall()
 unix_time = rows[0][0]
 time = datetime.fromtimestamp(unix_time, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 # Set time manually if needed
-time = "2025-08-01T00:00:00Z"
+# time = "2025-08-01T00:00:00Z"
 print(f"Delta timestamp: {time}\n")
 
 # Set fetchable record limit

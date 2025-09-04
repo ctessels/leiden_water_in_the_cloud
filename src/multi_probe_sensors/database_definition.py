@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('database.db')
+conn = sqlite3.connect('multi_probe_data/database.db')
 cursor = conn.cursor()
 
 # Create tables
