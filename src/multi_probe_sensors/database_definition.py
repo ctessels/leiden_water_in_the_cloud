@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS FactSensorData (
     row_id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id INTEGER NOT NULL,
     probe_number INTEGER NOT NULL,
-    timestamp DATETIME NOT NULL,
+    timestamp DATETIME NOT NULL, --Unix timestamp, so its actually an INT
     gateway_receive_time DATETIME,
     temperature REAL,
     relative_permittivity REAL,

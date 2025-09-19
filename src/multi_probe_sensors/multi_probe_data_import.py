@@ -9,11 +9,11 @@ from passwordnemail import secrets
 
 """
 TODO:
-Binnenhalen van weerdata
-Eerste data-analyse
-Weerdata integreren in analyse
+Onderzoeksvoorstel schrijven
+Eerste data-analyse obv onderzoeksvoorstel
 Integratie van data-analyse met vorige sensoren (alleen data vanaf 2025-08)
 Integratie van multi-sensor code met rest van codebase
+Schrijven documentatie
 """
 
 # Functions

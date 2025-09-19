@@ -5,10 +5,9 @@ import os
 import pandas as pd
 
 """
-TODO:
-Save file after unpacking
-Format into dataframe from 2025/07/01
-Find other data
+TODO
+Overlay onto current data
+Import other data
 """
 
 # Make sure the data folder exists
@@ -59,3 +58,6 @@ print('HEAD')
 print(valkenburg_precip_df.head())
 print("TAIL")
 print(valkenburg_precip_df.tail())
+
+valkenburg_precip_df.to_csv('multi_probe_data/valkenburg_precipitation.csv', index=False)
+print('Dataframe saved to csv')
