@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS DimSensor (
 );
 """)
 
+cursor.execute("PRAGMA table_info(DimSensor)")
+columns = [col[1] for col in cursor.fetchall()]
+if 'situation' not in columns:
+    cursor.execute("ALTER TABLE DimSensor ADD COLUMN situation TEXT")
+
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS FactSensorData (
     row_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -257,24 +263,5 @@ if not exists:
     conn.commit()
 else:
     print('Initial data already exists')
-
-
-import query_helper as qh
-
-select_dimsensor = """
-SELECT
-    device_id,
-    device_name,
-    measuring_points,
-    actual_coordinate,
-    location_name,
-    mp_depth_1,
-    mp_depth_2,
-    mp_depth_3,
-    is_active
-FROM DimSensor
-ORDER BY measuring_points DESC
-"""
-qh.select(cursor=cursor, query=select_dimsensor)
 
 conn.close()
