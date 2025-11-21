@@ -29,6 +29,10 @@ columns = [col[1] for col in cursor.fetchall()]
 if 'situation' not in columns:
     cursor.execute("ALTER TABLE DimSensor ADD COLUMN situation TEXT")
 
+cursor.execute("PRAGMA table_info(DimSensor)")
+columns = [col[1] for col in cursor.fetchall()]
+if 'datavalidatie' not in columns:
+    cursor.execute("ALTER TABLE DimSensor ADD COLUMN datavalidatie TEXT")
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS FactSensorData (
@@ -42,6 +46,26 @@ CREATE TABLE IF NOT EXISTS FactSensorData (
     electric_conductivity REAL,
     FOREIGN KEY (device_id) REFERENCES DimSensor (device_id)
     UNIQUE(device_id, probe_number, timestamp)
+);
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS WeatherForecast (
+    forecast_day DATE,
+    forecasted_day DATE,
+    weather TEXT,
+    max_temp REAL,
+    min_temp REAL,
+    windbft REAL,
+    windkmh REAL,
+    windknp REAL,
+    windms REAL,
+    wind_degrees REAL,
+    wind_direction TEXT,
+    precipitation_chance_percentage REAL,
+    sun_chance_percentage REAL,
+    actual REAL,
+    UNIQUE(forecast_day, forecasted_day)
 );
 """)
 

@@ -3,12 +3,10 @@ import zipfile
 import io
 import os
 import pandas as pd
+import sqlite3, datetime
+from passwordnemail import weerlive_key
 
-"""
-TODO
-Overlay onto current data
-Import other data
-"""
+print('HISTORICAL WEATHER DATA\n')
 
 # Make sure the data folder exists
 data_folder = 'multi_probe_data'
@@ -60,4 +58,43 @@ print("TAIL")
 print(valkenburg_precip_df.tail())
 
 valkenburg_precip_df.to_csv('multi_probe_data/valkenburg_precipitation.csv', index=False)
-print('Dataframe saved to csv')
+print('Dataframe saved to csv\n')
+
+print('FUTURE EXPECTED WEATHER DATA\n')
+
+conn = sqlite3.connect('multi_probe_data/database.db')
+cursor = conn.cursor()
+sqlite3.register_adapter(datetime.date, lambda d: d.isoformat())
+
+url = f'https://weerlive.nl/api/weerlive_api_v2.php?key={weerlive_key}&locatie=Leiden'
+response = requests.get(url)
+data = response.json()
+
+forecast_day = datetime.datetime.strptime(
+    data["liveweer"][0]["time"], "%d-%m-%Y %H:%M:%S"
+).date()
+
+for d in data['wk_verw']:
+    cursor.execute("""
+        INSERT OR REPLACE INTO WeatherForecast VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        );
+    """, (
+        forecast_day,
+        datetime.datetime.strptime(d["dag"], "%d-%m-%Y").date(),
+        d["image"],
+        d["max_temp"],
+        d["min_temp"],
+        d["windbft"],
+        d["windkmh"],
+        d["windknp"],
+        d["windms"],
+        d["windrgr"],
+        d["windr"],
+        d["neersl_perc_dag"],
+        d["zond_perc_dag"],
+        1
+    ))
+conn.commit()
+
+print('Forecast saved to database')
