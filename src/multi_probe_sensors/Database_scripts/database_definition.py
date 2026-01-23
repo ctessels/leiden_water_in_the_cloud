@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('multi_probe_data/database.db')
+conn = sqlite3.connect('../multi_probe_data/database.db')
 cursor = conn.cursor()
 
 # Create tables
@@ -34,6 +34,11 @@ columns = [col[1] for col in cursor.fetchall()]
 if 'datavalidatie' not in columns:
     cursor.execute("ALTER TABLE DimSensor ADD COLUMN datavalidatie TEXT")
 
+cursor.execute("PRAGMA table_info(DimSensor)")
+columns = [col[1] for col in cursor.fetchall()]
+if 'datavalidatie' not in columns:
+    cursor.execute("ALTER TABLE DimSensor ADD COLUMN datavalidatie TEXT")
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS FactSensorData (
     row_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,22 +55,27 @@ CREATE TABLE IF NOT EXISTS FactSensorData (
 """)
 
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS WeatherForecast (
-    forecast_day DATE,
-    forecasted_day DATE,
-    weather TEXT,
-    max_temp REAL,
-    min_temp REAL,
-    windbft REAL,
-    windkmh REAL,
-    windknp REAL,
-    windms REAL,
-    wind_degrees REAL,
-    wind_direction TEXT,
-    precipitation_chance_percentage REAL,
-    sun_chance_percentage REAL,
-    actual REAL,
-    UNIQUE(forecast_day, forecasted_day)
+CREATE TABLE IF NOT EXISTS TenDayForecast (
+    forecast_date       TEXT NOT NULL,
+    forecast_for_date   TEXT NOT NULL,
+    avg_temp            INTEGER,
+    min_temp            INTEGER,
+    max_temp            INTEGER,
+    wind_direction_deg  INTEGER,
+    wind_direction_txt  TEXT,
+    wind_scale          INTEGER,
+    wind_beaufort       INTEGER,
+    wind_kmh            REAL,
+    wind_knots          REAL,
+    precipitation_mm    REAL,
+    precipitation_perc  INTEGER,
+    sunshine_minutes    INTEGER,
+    sunshine_pct        INTEGER,
+    sunrise             TEXT,
+    sunset              TEXT,
+    condition           TEXT,
+    is_actual           INTEGER,
+    UNIQUE(forecast_date, forecast_for_date)
 );
 """)
 

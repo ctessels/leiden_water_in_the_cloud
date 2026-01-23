@@ -3,16 +3,11 @@ Imports multi probe data, and single probe data of sensors placed at the same ti
 """
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import timezone
 import requests
 from passwordnemail import secrets
-
-"""
-TODO:
-Integratie van data-analyse met vorige sensoren (alleen data vanaf 2025-08)
-Integratie van multi-sensor code met rest van codebase
-Schrijven documentatie
-"""
+from time import mktime
+from datetime import datetime
 
 # Functions
 def get_data(endpoint, api_headers, api_params):
@@ -26,7 +21,7 @@ def get_data(endpoint, api_headers, api_params):
         exit('Bad response')
 
 # Connect to sqlite3 database
-conn = sqlite3.connect('multi_probe_data/database.db')
+conn = sqlite3.connect('../multi_probe_data/database.db')
 cursor = conn.cursor()
 
 # The URL for the token API
@@ -188,5 +183,17 @@ cursor.executemany(insert_sql, values)
 rows_inserted = cursor.rowcount
 conn.commit()
 print(f"{rows_inserted} rows inserted")
-conn.close()
 print("Data fetched")
+print()
+
+# Data cleaning
+print('Start data cleaning')
+cutoff = int(mktime(datetime(2025, 9, 20).timetuple())) # Aangezien deze sensor iets voor deze datum opnieuw is ingegraven.
+conn.cursor().execute(f"""
+    DELETE FROM FactSensorData
+    WHERE device_id = 1386
+      AND timestamp < {cutoff};
+""")
+print("Data cleaned")
+
+conn.close()
