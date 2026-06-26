@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('../multi_probe_data/database.db')
+conn = sqlite3.connect('../Data_collection/multi_probe_data/database.db')
 cursor = conn.cursor()
 
 # Create tables
@@ -36,8 +36,8 @@ if 'datavalidatie' not in columns:
 
 cursor.execute("PRAGMA table_info(DimSensor)")
 columns = [col[1] for col in cursor.fetchall()]
-if 'datavalidatie' not in columns:
-    cursor.execute("ALTER TABLE DimSensor ADD COLUMN datavalidatie TEXT")
+if 'usable_from' not in columns:
+    cursor.execute("ALTER TABLE DimSensor ADD COLUMN usable_from TEXT")
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS FactSensorData (
@@ -76,6 +76,13 @@ CREATE TABLE IF NOT EXISTS TenDayForecast (
     condition           TEXT,
     is_actual           INTEGER,
     UNIQUE(forecast_date, forecast_for_date)
+);
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS DimBattery (
+    device_id           INTEGER PRIMARY KEY,
+    battery_percentage  INTEGER NOT NULL
 );
 """)
 

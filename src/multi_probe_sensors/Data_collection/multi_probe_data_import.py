@@ -3,11 +3,11 @@ Imports multi probe data, and single probe data of sensors placed at the same ti
 """
 
 import sqlite3
-from datetime import timezone
+from pathlib import Path
 import requests
 from passwordnemail import secrets
 from time import mktime
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 # Functions
 def get_data(endpoint, api_headers, api_params):
@@ -21,12 +21,14 @@ def get_data(endpoint, api_headers, api_params):
         exit('Bad response')
 
 # Connect to sqlite3 database
-conn = sqlite3.connect('../multi_probe_data/database.db')
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / 'multi_probe_data' / 'database.db'
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
 # The URL for the token API
 login_url = 'https://insight.quantified.eu/api/token/login/'
- 
+
 # Make the POST request
 response = requests.post(login_url, auth=(secrets['EMAIL'], secrets['PASSWORD']))
 
@@ -53,11 +55,22 @@ print(f"ID's to fetch data for:\n"
 
 # Set delta timestamp
 cursor.execute("""
-select max(timestamp) from FactSensorData
+SELECT MIN(max_timestamp)
+FROM (
+    SELECT
+        ds.device_id,
+        MAX(fsd.timestamp) AS max_timestamp
+    FROM DimSensor AS ds
+    JOIN FactSensorData AS fsd
+        ON fsd.device_id = ds.device_id
+    GROUP BY ds.device_id
+)
 """)
-rows = cursor.fetchall()
-unix_time = rows[0][0]
-time = datetime.fromtimestamp(unix_time, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+unix_time = cursor.fetchone()[0]
+if unix_time is None:
+    time = "2025-08-01T00:00:00Z"
+else:
+    time = datetime.fromtimestamp(unix_time, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 # Set time manually if needed
 # time = "2025-08-01T00:00:00Z"
 print(f"Delta timestamp: {time}\n")
@@ -188,12 +201,82 @@ print()
 
 # Data cleaning
 print('Start data cleaning')
+
 cutoff = int(mktime(datetime(2025, 9, 20).timetuple())) # Aangezien deze sensor iets voor deze datum opnieuw is ingegraven.
 conn.cursor().execute(f"""
     DELETE FROM FactSensorData
     WHERE device_id = 1386
       AND timestamp < {cutoff};
 """)
+
+# Alle andere sensoren moeten ook opgeruimd worden adhv dimsensor.
+
 print("Data cleaned")
+print()
+
+
+### Get battery data
+"""
+For diagnostic and maintenance purposes, a battery dimension will be kept.
+"""
+
+print("Fetching battery data...")
+
+battery_from_time = (
+    datetime.now(timezone.utc).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+    - timedelta(days=1)
+).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+battery_voltage_events_endpoint = (
+    "https://insight.quantified.eu/api/battery_voltage_events/"
+)
+
+params = {
+    "device_id": ",".join(str(device_id) for device_id in id_list),
+    "gateway_receive_time_after": battery_from_time,
+    "limit": record_limit
+}
+
+records = get_data(battery_voltage_events_endpoint, headers, params)
+
+# Keep the most recent battery measurement for each device
+latest_battery_records = {}
+
+for record in records:
+    device_id = record["device"]
+
+    if (
+        device_id not in latest_battery_records
+        or record["timestamp"] > latest_battery_records[device_id]["timestamp"]
+    ):
+        latest_battery_records[device_id] = record
+
+values = [
+    (
+        record["device"],
+        record["percentage"]
+    )
+    for record in latest_battery_records.values()
+]
+
+insert_sql = """
+INSERT INTO DimBattery (
+    device_id,
+    battery_percentage
+)
+VALUES (?, ?)
+ON CONFLICT(device_id) DO UPDATE SET
+    battery_percentage = excluded.battery_percentage;
+"""
+
+cursor.executemany(insert_sql, values)
+conn.commit()
+
+print("Battery data updated")
 
 conn.close()

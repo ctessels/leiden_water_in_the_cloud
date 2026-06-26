@@ -3,7 +3,7 @@ import zipfile
 import io
 import os
 import pandas as pd
-import sqlite3, datetime
+import sqlite3
 from passwordnemail import meteoserver_key
 from datetime import date, datetime
 
@@ -99,13 +99,13 @@ header_lines = [line for line in raw.splitlines() if line.startswith("#")]
 data_part = "\n".join(line for line in raw.splitlines() if not line.startswith("#"))
 
 # save normal csv with header + data
-with open("../multi_probe_data/voorschoten_weerdata.csv", "w", encoding="utf-8") as f:
+with open("multi_probe_data/voorschoten_weerdata.csv", "w", encoding="utf-8") as f:
     f.write(header_lines[18].replace('# ','') + "\n")
     for row in data_part.splitlines():
         f.write(row + "\n")
 
 # Format dates
-voorschoten_weather_df = pd.read_csv("../multi_probe_data/voorschoten_weerdata.csv")
+voorschoten_weather_df = pd.read_csv("multi_probe_data/voorschoten_weerdata.csv")
 voorschoten_weather_df["YYYYMMDD"] = pd.to_datetime(voorschoten_weather_df["YYYYMMDD"], format="%Y%m%d")
 voorschoten_weather_df = voorschoten_weather_df.rename(columns={"YYYYMMDD": "DATE"})
 # Rename columns
@@ -140,7 +140,7 @@ print('Voorschoten dataframe saved to csv\n')
 
 print('FUTURE EXPECTED WEATHER DATA\n')
 
-conn = sqlite3.connect('../multi_probe_data/database.db')
+conn = sqlite3.connect('multi_probe_data/database.db')
 cursor = conn.cursor()
 sqlite3.register_adapter(datetime.date, lambda d: d.isoformat())
 
