@@ -155,4 +155,4 @@ def import_dimbattery_from_excel(db_path: Path | str = DB_PATH) -> None:
 
 
 if __name__ == "__main__":
-    import_dimsensor_from_excel()
+    export_factsensordata_to_excel(DB_PATH)

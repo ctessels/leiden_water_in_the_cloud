@@ -36,7 +36,6 @@ response = requests.post(login_url, auth=(secrets['EMAIL'], secrets['PASSWORD'])
 if response.status_code == 200:
     # Extract the token from the response
     token = response.json().get('token')
-    print(f"Token: {token}\n")
 else:
     token = None
     print("Failed to retrieve token:", response.status_code, response.text)
@@ -53,36 +52,18 @@ print(f"ID's to fetch data for:\n"
       f"Single probe: {single_probe_id_list}\n"
       f"Multi probe: {multi_probe_id_list}\n")
 
-# Set delta timestamp
-cursor.execute("""
-SELECT MIN(max_timestamp)
-FROM (
-    SELECT
-        ds.device_id,
-        MAX(fsd.timestamp) AS max_timestamp
-    FROM DimSensor AS ds
-    JOIN FactSensorData AS fsd
-        ON fsd.device_id = ds.device_id
-    GROUP BY ds.device_id
-)
-""")
-unix_time = cursor.fetchone()[0]
-if unix_time is None:
-    time = "2025-08-01T00:00:00Z"
-else:
-    time = datetime.fromtimestamp(unix_time, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+now = datetime.now(timezone.utc)
+time = (now - timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:%SZ")
+time_until = now.strftime("%Y-%m-%dT%H:%M:%SZ")
 # Set time manually if needed
 # time = "2025-08-01T00:00:00Z"
 print(f"Delta timestamp: {time}\n")
-
-# Set fetchable record limit
-record_limit = 10000
 
 # Input into API parameters
 params = {
     "device_id": multi_probe_id_list,
     "gateway_receive_time_after": f"{time}",
-    'limit': record_limit,
+    "gateway_receive_time_before": f"{time_until}",
 }
 headers = {
     "Authorization": f"Bearer {token}",
@@ -94,8 +75,6 @@ print("Fetching multi probe data...")
 multi_soil_probe_events_endpoint = 'https://insight.quantified.eu/api/multi_soil_probe_events/'
 records = get_data(multi_soil_probe_events_endpoint, headers, params)
 print("Got", len(records), "results")
-if len(records) > record_limit:
-    print(f"Records limit reached")
 
 # Format response to FactSensorData table
 insert_sql = """
@@ -118,8 +97,9 @@ values = [
 ]
 
 # Insert response into table
+changes_before_insert = conn.total_changes
 cursor.executemany(insert_sql, values)
-rows_inserted = cursor.rowcount
+rows_inserted = conn.total_changes - changes_before_insert
 conn.commit()
 print(f'{rows_inserted} rows inserted')
 print("Data fetched\n")
@@ -129,7 +109,7 @@ print("Data fetched\n")
 params = {
     "device_id": single_probe_id_list,
     "gateway_receive_time_after": f"{time}",
-    'limit': record_limit,
+    "gateway_receive_time_before": f"{time_until}",
 }
 
 # Get single probe response
@@ -192,8 +172,9 @@ values = [
     )
 ]
 
+changes_before_insert = conn.total_changes
 cursor.executemany(insert_sql, values)
-rows_inserted = cursor.rowcount
+rows_inserted = conn.total_changes - changes_before_insert
 conn.commit()
 print(f"{rows_inserted} rows inserted")
 print("Data fetched")
@@ -239,7 +220,6 @@ battery_voltage_events_endpoint = (
 params = {
     "device_id": ",".join(str(device_id) for device_id in id_list),
     "gateway_receive_time_after": battery_from_time,
-    "limit": record_limit
 }
 
 records = get_data(battery_voltage_events_endpoint, headers, params)
