@@ -53,7 +53,7 @@ print(f"ID's to fetch data for:\n"
       f"Multi probe: {multi_probe_id_list}\n")
 
 now = datetime.now(timezone.utc)
-time = (now - timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:%SZ")
+time = (now - timedelta(days=100)).strftime("%Y-%m-%dT%H:%M:%SZ")
 time_until = now.strftime("%Y-%m-%dT%H:%M:%SZ")
 # Set time manually if needed
 # time = "2025-08-01T00:00:00Z"
@@ -64,6 +64,7 @@ params = {
     "device_id": multi_probe_id_list,
     "gateway_receive_time_after": f"{time}",
     "gateway_receive_time_before": f"{time_until}",
+    "limit": 10000
 }
 headers = {
     "Authorization": f"Bearer {token}",
@@ -110,6 +111,7 @@ params = {
     "device_id": single_probe_id_list,
     "gateway_receive_time_after": f"{time}",
     "gateway_receive_time_before": f"{time_until}",
+    "limit": 10000
 }
 
 # Get single probe response

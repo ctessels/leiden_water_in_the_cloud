@@ -71,25 +71,25 @@ PASSWORD=jouw_quantified_wachtwoord
 
 ```
 src/
-├── api_components/           # API-integratie en data ophalen
-│   ├── data_loading.py      # Data laad-utilities
-│   ├── refresh_external_data.py
-│   └── refresh_quantified.py # Quantified API-integratie
-├── logic_components/         # Data verwerking en analyse
-│   ├── data_transformations.py
-│   ├── powerpoint.py
-│   └── visuals.py           # Visualisatie functies
-├── data/                    # Data opslag
-└── visuals/                 # Gegenereerde visualisaties
+└── multi_probe_sensors/
+    ├── Data_collection/      # API-imports, weerdata en kwaliteitscontrole
+    ├── Data-analyse/         # Analyse op basis van de SQLite-database
+    ├── Database_scripts/     # Database-definitie en query-hulpmiddelen
+    └── Watergeven.py         # Eenmalige analyse van watergeefdata
 ```
 
 ## Gebruik
-Om nieuwe sensordata bij te werken, voer notebook `sensor_data_prep.ipynb` uit
-Voor analyse en visualisatie, voer notebook `sensor_analyse_fase_1.ipynb` uit
-In notebook `sensor_analyse_uitgebreid.ipynb` vind je uitgebreide analyses en visualisaties.
+De huidige workflow staat in `src/multi_probe_sensors`.
+
+1. Maak of werk de database bij met `Database_scripts/database_definition.py`.
+2. Haal sensordata op met `Data_collection/multi_probe_data_import.py`.
+3. Haal weerdata op met `Data_collection/weather_data_import.py`.
+4. Controleer bruikbare sensoren met `Data_collection/data_ingestion_QC.py`.
+5. Voer analyses uit vanuit `Data-analyse/Data-analyse.py` of de scripts in `Schroothoop`.
 
 ## Databronnen
 
 - Bodemsensoren: Quantified API
-- Weerdata: KNMI (station 240 - Schiphol)
-- Lokaal weer: Leiden weerstation (Zusterhof)
+- Historische neerslag: KNMI Valkenburg
+- Historische weerdata: KNMI Voorschoten
+- Verwachte weerdata: Meteoserver
