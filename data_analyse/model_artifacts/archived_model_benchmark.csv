@@ -1,0 +1,5 @@
+mode,probe_number,depth_cm,sensors,holdout_cases,model_mae,persistence_mae,beats_persistence
+archived_full_history,1,15,8,21,0.00212470839901577,0.0035813543166270316,True
+archived_full_history,1,30,3,10,0.012090075028517314,0.011841470006984135,False
+leakage_free,1,15,8,21,0.002063109562046622,0.0035813543166270316,True
+leakage_free,1,30,3,10,0.012109794762143687,0.011841470006984135,False
