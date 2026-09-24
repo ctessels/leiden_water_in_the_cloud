@@ -1,0 +1,17 @@
+Snowflake voor de gemeente leiden
+
+Mag ik snowflake gebruiken
+	Emiel Hilergom heeft toestemming gegeven. Dat is genoeg.
+Wie heeft waar toegang toe?
+	Alle data loopt via mij.
+	Vanaf 2027 willen ze de data zelf gaan gebruiken. Ilionx of ICT Leiden beheer?
+	Data afgeven via website / applicatie?
+	Opties vanuit Ilionx?
+Wie beheert het / wie beheert het als ik weg ben?
+	Veder kijken wat Ilionx aanbiedt.
+Creditcard zoeken bij GL, of die van Ilionx.
+	Creditcard van Ilionx en dan factureren.
+	Mogelijk binnen Ilionx?
+Bij opzetten iemand van support aanhaken.
+
+Geen bedrijven noemen in database. Met ID's naar bedrijven verwijzen.

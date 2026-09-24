@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="sdkName" value="Python 3.12 (leiden_water_in_the_cloud)" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="~/Projects/Gemeente Leiden/leiden_water_in_the_cloud/.venv" project-jdk-type="Python SDK" />
+</project>

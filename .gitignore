@@ -6,7 +6,7 @@ profile_default/
 ipython_config.py
 
 # Environments
-.env
+passwordnemail.py
 .venv
 env/
 ../venv/

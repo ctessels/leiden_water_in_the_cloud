@@ -7,8 +7,8 @@ Een data-analyseproject voor het monitoren van bodemvochtigheidssensoren in de s
 Dit project bestaat uit verschillende componenten:
 
 1. **Data Verzameling**
-   - Haalt sensordata op via de Quantified API (permeabiliteit en batterijniveaus)
-   - Integreert weerdata van KNMI en lokale Leidse weerstations
+   - Haalt sensordata op via de Quantified API (relatieve permittiviteit en batterijniveaus)
+   - Integreert historische KNMI-data en Meteoserver-weersverwachtingen
    - Beheert sensorlocaties en documentatiegegevens
 
 2. **Data Verwerking**
@@ -17,13 +17,13 @@ Dit project bestaat uit verschillende componenten:
    - Verwerkt weerdata voor correlatie-analyse
 
 3. **Visualisatie**
-   - Creëert tijdreeksvisualisaties van sensormetingen
-   - Brengt sensorlocaties in kaart met hun huidige status
-   - Genereert rapporten met gecombineerde sensor- en weerdata
+   - Creëert tijdreeksvisualisaties van sensormetingen, neerslag en energieproxy
+   - Genereert kwaliteitscontrolegrafieken per sensor
+   - Genereert trainings- en voorspellingsgrafieken per sensor, probe en diepte
 
 ## Vereisten
 
-- Python 3.12
+- Python 3.12 of nieuwer
 - uv (Python package installer en virtual environment manager)
 
 ## Installatie
@@ -61,35 +61,38 @@ source .venv/bin/activate  # Voor macOS
 uv pip install -r requirements.txt
 ```
 
-5. Maak een `.env` bestand aan in de projectroot met de volgende inhoud:
-```
-EMAIL=jouw_quantified_email
-PASSWORD=jouw_quantified_wachtwoord
-```
+5. Maak of vul `passwordnemail.py` in de projectroot. De actieve scripts verwachten daarin `secrets` voor Quantified en `meteoserver_key` voor Meteoserver. Dit bestand wordt door git genegeerd.
 
 ## Project Structuur
 
 ```
-src/
-├── api_components/           # API-integratie en data ophalen
-│   ├── data_loading.py      # Data laad-utilities
-│   ├── refresh_external_data.py
-│   └── refresh_quantified.py # Quantified API-integratie
-├── logic_components/         # Data verwerking en analyse
-│   ├── data_transformations.py
-│   ├── powerpoint.py
-│   └── visuals.py           # Visualisatie functies
-├── data/                    # Data opslag
-└── visuals/                 # Gegenereerde visualisaties
+Documentation/         # Projectdocumentatie, rapporten en modeluitleg
+legacy_data/           # Oude data en bewaarde modelexperimenten
+data_collection/       # API-imports, weerdata, QC, runtime data en exports
+database_scripts/      # Database-definitie en query-hulpmiddelen
+data_analyse/          # Data-exploratie, modelontwikkeling en dagelijkse voorspelling
+Watergeven.py          # Eenmalige analyse van watergeefdata
 ```
 
 ## Gebruik
-Om nieuwe sensordata bij te werken, voer notebook `sensor_data_prep.ipynb` uit
-Voor analyse en visualisatie, voer notebook `sensor_analyse_fase_1.ipynb` uit
-In notebook `sensor_analyse_uitgebreid.ipynb` vind je uitgebreide analyses en visualisaties.
+Voer commando's bij voorkeur uit vanuit de projectroot.
+
+1. Maak of werk de database bij met `database_scripts/database_definition.py`.
+2. Haal sensordata op met `data_collection/sensor_data_import.py`.
+3. Haal weerdata op met `data_collection/weather_data_import.py`.
+4. Controleer bruikbare sensoren met `data_collection/data_ingestion_QC.py`.
+5. Train de sensorparameters met `python data_analyse/train_permittivity_prediction_model.py --method exhaustive` of de snellere methode `--method coarse-to-fine`.
+6. Maak de dagelijkse Excel-voorspelling met `python data_analyse/permittivity_prediction_model.py run`.
+
+Data-exploratie staat apart van het model in `data_analyse/permittivity_data_exploration.py`. Gebruik bijvoorbeeld `python data_analyse/permittivity_data_exploration.py --device-id 1384 --probe-number all` voor alle probes van een sensor. De gecombineerde weergave met neerslag en energieproxy is standaard; kies desgewenst `--weather-view rain` of `--weather-view energy`. Iedere uitvoering opent een nieuwe browsergalerij. Het model gebruikt alle probes van sensoren uit `usable_sensors.json` en traint iedere combinatie van sensor, probe en exacte diepte zelfstandig.
+
+Het voorspellende model is nog niet biologisch gevalideerd voor automatische watergeefbesluiten. Controleer na iedere training de Excel-evaluatie en vergelijk model-MAE met persistence-MAE voordat een modelartefact operationeel wordt gebruikt.
+
+Meer uitleg over de workflow, database, scripts en aandachtspunten staat in `Documentation/project_documentatie.md`. De werking van het voorspellende model staat in `Documentation/voorspellend_model.md`.
 
 ## Databronnen
 
 - Bodemsensoren: Quantified API
-- Weerdata: KNMI (station 240 - Schiphol)
-- Lokaal weer: Leiden weerstation (Zusterhof)
+- Historische neerslag: KNMI Valkenburg
+- Historische weerdata: KNMI Voorschoten
+- Verwachte weerdata: Meteoserver
