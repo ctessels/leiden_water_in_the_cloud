@@ -34,12 +34,22 @@ with zipfile.ZipFile(io.BytesIO(response.content)) as z:
 print(f"File saved to {save_path}")
 
 # Read the CSV into a dataframe
+with open(save_path, "r", encoding="utf-8") as f:
+    lines = f.readlines()
+
+header_index = 23
+for idx, line in enumerate(lines):
+    if "STN,YYYYMMDD" in line:
+        header_index = idx
+        break
+
 valkenburg_precip_df = pd.read_csv(
     save_path,
-    skiprows=40,  # skip all the explanation before the header
+    skiprows=header_index,
 )
 # remove unnamed last column
 valkenburg_precip_df = valkenburg_precip_df.iloc[:, :-1]
+valkenburg_precip_df.columns = valkenburg_precip_df.columns.str.strip()
 # Cut unused data, and convert to date
 valkenburg_precip_df = valkenburg_precip_df[valkenburg_precip_df["YYYYMMDD"] >= 20250701]
 valkenburg_precip_df["YYYYMMDD"] = pd.to_datetime(valkenburg_precip_df["YYYYMMDD"], format="%Y%m%d")
