@@ -98,6 +98,25 @@ def default_output_path(
     return output_dir / f"sensors_{sensor_part}_probe_{probe_number}{period_part}.png"
 
 
+# Standaard tab10-kleuren aangevuld met extra, duidelijk afwijkende kleuren,
+# zodat tot 20 sensoren elk een unieke kleur krijgen.
+DISTINCT_COLORS = [
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+    "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+    "#000000", "#b8860b", "#00ff7f", "#800000", "#4b0082",
+    "#ff1493", "#556b2f", "#000080", "#ff4500", "#008080",
+]
+
+
+def line_colors(count: int) -> list:
+    """Geef `count` unieke lijnkleuren terug."""
+    if count <= len(DISTINCT_COLORS):
+        return DISTINCT_COLORS[:count]
+    # Bij meer sensoren dan vaste kleuren: verdeel gelijkmatig over een colormap.
+    colormap = matplotlib.colormaps["turbo"]
+    return [colormap(index / max(count - 1, 1)) for index in range(count)]
+
+
 def write_combined_permittivity_graph(
     path: Path,
     title: str,
@@ -129,13 +148,14 @@ def write_combined_permittivity_graph(
         axis.set_zorder(bar_axis.get_zorder() + 1)
         axis.patch.set_visible(False)
 
-    for label, data in series:
+    for (label, data), color in zip(series, line_colors(len(series))):
         axis.plot(
             data["date"],
             data["relative_permittivity"],
-            linewidth=2.0,
+            linewidth=0.5,
             marker="o",
-            markersize=2.5,
+            markersize=0,
+            color=color,
             label=label,
         )
 
