@@ -160,38 +160,20 @@ def write_combined_permittivity_graph(
 
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    figure, axis = plt.subplots(figsize=(14, 7))
-
-    bar_axis = None
-    if weather is not None and not weather.empty:
-        bar_axis = axis.twinx()
-        bar_axis.bar(
-            weather["date"],
-            weather["rain_mm"],
-            width=0.8,
-            alpha=0.22,
-            color="#4C78A8",
-            label="Neerslag (mm)",
-            zorder=1,
+    has_weather = weather is not None and not weather.empty
+    weather_axis = None
+    balance_axis = None
+    if has_weather:
+        # Sensoren boven, weergegevens in een apart paneel eronder met dezelfde datum-as.
+        figure, (axis, weather_axis) = plt.subplots(
+            2,
+            1,
+            sharex=True,
+            figsize=(14, 10),
+            gridspec_kw={"height_ratios": [2, 1]},
         )
-        y_label_right = "Neerslag (mm)"
-        if "evaporation_mm" in weather:
-            bar_axis.plot(
-                weather["date"],
-                weather["evaporation_mm"],
-                # Gestippeld en in een kleur buiten DISTINCT_COLORS, zodat de
-                # verdamping niet met een sensorlijn wordt verward.
-                linewidth=1.2,
-                linestyle="--",
-                color="#a0522d",
-                label="Referentieverdamping Makkink (mm)",
-                zorder=2,
-            )
-            y_label_right = "Neerslag / verdamping (mm)"
-        bar_axis.set_ylabel(y_label_right)
-        # Houd de sensorlijnen boven de neerslagstaven.
-        axis.set_zorder(bar_axis.get_zorder() + 1)
-        axis.patch.set_visible(False)
+    else:
+        figure, axis = plt.subplots(figsize=(14, 7))
 
     for (label, data), color in zip(series, line_colors(len(series))):
         axis.plot(
@@ -205,26 +187,74 @@ def write_combined_permittivity_graph(
         )
 
     axis.set_title(title)
-    axis.set_xlabel("Datum")
     axis.set_ylabel(y_label)
     axis.grid(axis="y", alpha=0.2)
-    lines, labels = axis.get_legend_handles_labels()
-    if bar_axis is not None:
-        bar_lines, bar_labels = bar_axis.get_legend_handles_labels()
-        lines += bar_lines
-        labels += bar_labels
-    # Legenda onder de grafiek, zodat de lijnen niet worden afgedekt.
-    axis.legend(
+
+    if weather_axis is not None:
+        weather_axis.bar(
+            weather["date"],
+            weather["rain_mm"],
+            width=0.8,
+            alpha=0.5,
+            color="#4C78A8",
+            label="Neerslag (mm)",
+        )
+        weather_y_label = "Neerslag (mm/dag)"
+        if "evaporation_mm" in weather:
+            weather_axis.plot(
+                weather["date"],
+                weather["evaporation_mm"],
+                # Gestippeld en in een kleur buiten DISTINCT_COLORS, zodat de
+                # verdamping niet met een sensorlijn wordt verward.
+                linewidth=1.2,
+                linestyle="--",
+                color="#a0522d",
+                label="Referentieverdamping Makkink (mm)",
+            )
+            weather_y_label = "Neerslag / verdamping (mm/dag)"
+
+            # Cumulatief neerslagoverschot loopt op tot honderden mm en krijgt
+            # daarom een eigen as rechts in het weerpaneel.
+            balance_axis = weather_axis.twinx()
+            balance = (
+                (weather["rain_mm"] - weather["evaporation_mm"]).fillna(0).cumsum()
+            )
+            balance_axis.plot(
+                weather["date"],
+                balance,
+                # Dik streep-stip, zodat de lijn niet op een sensorlijn lijkt.
+                linewidth=1.8,
+                linestyle="-.",
+                color="#6a3d9a",
+                label="Cumulatief neerslagoverschot (mm)",
+            )
+            balance_axis.axhline(0, color="#6a3d9a", linewidth=0.6, alpha=0.4)
+            balance_axis.set_ylabel(
+                "Cumulatief neerslag − verdamping (mm)", color="#6a3d9a"
+            )
+        weather_axis.set_ylabel(weather_y_label)
+        weather_axis.grid(axis="y", alpha=0.2)
+
+    bottom_axis = weather_axis if weather_axis is not None else axis
+    bottom_axis.set_xlabel("Datum")
+    lines, labels = [], []
+    for legend_axis in (axis, weather_axis, balance_axis):
+        if legend_axis is not None:
+            axis_lines, axis_labels = legend_axis.get_legend_handles_labels()
+            lines += axis_lines
+            labels += axis_labels
+    # Legenda onder de onderste grafiek, zodat de lijnen niet worden afgedekt.
+    bottom_axis.legend(
         lines,
         labels,
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.18),
+        bbox_to_anchor=(0.5, -0.35 if weather_axis is not None else -0.18),
         ncol=min(3, len(labels)),
         frameon=False,
         fontsize="small",
     )
-    axis.xaxis.set_major_locator(mdates.AutoDateLocator())
-    axis.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+    bottom_axis.xaxis.set_major_locator(mdates.AutoDateLocator())
+    bottom_axis.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
 
     figure.autofmt_xdate(rotation=35)
     figure.tight_layout()
