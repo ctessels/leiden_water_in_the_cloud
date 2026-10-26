@@ -16,7 +16,7 @@
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="RUN_TOOL" value="" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_analyse/permittivity_data_exploration_combined.py" />
-    <option name="PARAMETERS" value="--device-ids 356,397,414,361,369,1384,1385,1387,1390,1391,1393,1432 --probe-number 1 --normalisatie minmax" />
+    <option name="PARAMETERS" value="--device-ids 356,397,414,361,369,1384,1385,1387,1390,1391,1393,1432 --probe-number 1 --normalisatie zscore" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

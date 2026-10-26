@@ -199,7 +199,16 @@ def write_combined_permittivity_graph(
         bar_lines, bar_labels = bar_axis.get_legend_handles_labels()
         lines += bar_lines
         labels += bar_labels
-    axis.legend(lines, labels, loc="best")
+    # Legenda onder de grafiek, zodat de lijnen niet worden afgedekt.
+    axis.legend(
+        lines,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=min(3, len(labels)),
+        frameon=False,
+        fontsize="small",
+    )
     axis.xaxis.set_major_locator(mdates.AutoDateLocator())
     axis.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
 
