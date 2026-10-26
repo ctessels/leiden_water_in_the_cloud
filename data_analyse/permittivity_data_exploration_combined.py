@@ -29,6 +29,14 @@ except ImportError:
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "data_exploration" / "combined"
 
+# Normalisatie per sensor, zodat sensoren met een verschillend absoluut niveau
+# op dezelfde schaal komen en het verloop beter vergelijkbaar is.
+NORMALISATIONS = {
+    "geen": "Relatieve permittiviteit",
+    "zscore": "Relatieve permittiviteit (z-score per sensor)",
+    "minmax": "Relatieve permittiviteit (min-max per sensor, 0-1)",
+}
+
 
 def parse_device_ids(value: str) -> list[int]:
     """Lees een kommagescheiden lijst met sensor-id's."""
@@ -69,6 +77,23 @@ def parse_date(value: str) -> date:
     return date.fromisoformat(value)
 
 
+def normalise_series(values: pd.Series, method: str) -> pd.Series:
+    """Normaliseer de waarden van één sensor volgens `method`."""
+    if method == "geen":
+        return values
+    if method == "zscore":
+        std = values.std()
+        if pd.isna(std) or std == 0:
+            return values - values.mean()
+        return (values - values.mean()) / std
+    if method == "minmax":
+        value_range = values.max() - values.min()
+        if pd.isna(value_range) or value_range == 0:
+            return values * 0
+        return (values - values.min()) / value_range
+    raise ValueError(f"Onbekende normalisatie: {method}")
+
+
 def sensor_label(inventory_row: pd.Series) -> str:
     """Maak een korte legenda-tekst voor één sensorlijn."""
     depth_text = (
@@ -89,13 +114,18 @@ def default_output_path(
     start: date | None,
     end: date | None,
     output_dir: Path,
+    normalisation: str = "geen",
 ) -> Path:
     """Bepaal de standaard bestandsnaam voor de gecombineerde grafiek."""
     sensor_part = "_".join(str(device_id) for device_id in device_ids)
     period_part = ""
     if start is not None or end is not None:
         period_part = f"_{start or 'begin'}_tot_{end or 'einde'}"
-    return output_dir / f"sensors_{sensor_part}_probe_{probe_number}{period_part}.png"
+    normalisation_part = "" if normalisation == "geen" else f"_{normalisation}"
+    return output_dir / (
+        f"sensors_{sensor_part}_probe_{probe_number}"
+        f"{period_part}{normalisation_part}.png"
+    )
 
 
 # Standaard tab10-kleuren aangevuld met extra, duidelijk afwijkende kleuren,
@@ -122,6 +152,7 @@ def write_combined_permittivity_graph(
     title: str,
     series: list[tuple[str, pd.DataFrame]],
     weather: pd.DataFrame | None = None,
+    y_label: str = NORMALISATIONS["geen"],
 ) -> None:
     """Schrijf één grafiek waarin iedere sensor een eigen lijn heeft."""
     if not series:
@@ -161,7 +192,7 @@ def write_combined_permittivity_graph(
 
     axis.set_title(title)
     axis.set_xlabel("Datum")
-    axis.set_ylabel("Relatieve permittiviteit")
+    axis.set_ylabel(y_label)
     axis.grid(axis="y", alpha=0.2)
     lines, labels = axis.get_legend_handles_labels()
     if bar_axis is not None:
@@ -185,10 +216,13 @@ def generate_combined_graph(
     end: date | None = None,
     output_dir: Path = OUTPUT_DIR,
     output_path: Path | None = None,
+    normalisation: str = "geen",
 ) -> Path:
     """Genereer een gecombineerde permittiviteitsgrafiek voor meerdere sensoren."""
     if start is not None and end is not None and start > end:
         raise ValueError("De startdatum mag niet na de einddatum liggen")
+    if normalisation not in NORMALISATIONS:
+        raise ValueError(f"Onbekende normalisatie: {normalisation}")
 
     inventory = load_active_probe_inventory()
     inventory = inventory[
@@ -241,6 +275,9 @@ def generate_combined_graph(
             continue
 
         sensor_data = sensor_data.sort_values("date")
+        sensor_data["relative_permittivity"] = normalise_series(
+            sensor_data["relative_permittivity"], normalisation
+        )
         graph_series.append(
             (
                 sensor_label(identity),
@@ -262,6 +299,7 @@ def generate_combined_graph(
         start=start,
         end=end,
         output_dir=output_dir,
+        normalisation=normalisation,
     )
 
     first_date = min(data["date"].min() for _, data in graph_series)
@@ -275,7 +313,11 @@ def generate_combined_graph(
         f"Relatieve permittiviteit en neerslag per sensor - probe {probe_number} "
         f"({start or 'begin'} t/m {end or 'einde'})"
     )
-    write_combined_permittivity_graph(path, title, graph_series, weather)
+    if normalisation != "geen":
+        title += f" - genormaliseerd ({normalisation})"
+    write_combined_permittivity_graph(
+        path, title, graph_series, weather, y_label=NORMALISATIONS[normalisation]
+    )
     return path.resolve()
 
 
@@ -292,6 +334,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--end", type=parse_date)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--normalisatie",
+        choices=list(NORMALISATIONS),
+        default="geen",
+        help=(
+            "Normaliseer iedere sensor afzonderlijk: 'zscore' (gemiddelde 0, "
+            "standaarddeviatie 1) of 'minmax' (schaal 0-1). Standaard: geen"
+        ),
+    )
     return parser
 
 
@@ -308,7 +359,8 @@ def main() -> None:
         "Gecombineerde dataverkenning gestart"
         f" | sensoren {', '.join(str(device_id) for device_id in arguments.device_ids)}"
         f" | probe {arguments.probe_number}"
-        f" | periode {arguments.start or 'begin'} t/m {arguments.end or 'einde'}",
+        f" | periode {arguments.start or 'begin'} t/m {arguments.end or 'einde'}"
+        f" | normalisatie {arguments.normalisatie}",
         flush=True,
     )
 
@@ -320,6 +372,7 @@ def main() -> None:
             end=arguments.end,
             output_dir=arguments.output_dir,
             output_path=arguments.output,
+            normalisation=arguments.normalisatie,
         )
         print(f"Gecombineerde dataverkenning voltooid | grafiek: {graph_path}", flush=True)
     except Exception as error:
