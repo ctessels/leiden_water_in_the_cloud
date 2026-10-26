@@ -186,8 +186,14 @@ def load_historical_weather(path: Path = WEATHER_PATH) -> pd.DataFrame:
         average_temperature_c,
         maximum_temperature_c,
     )
+    # EV24: Makkink referentiegewasverdamping in 0,1 mm.
+    weather["evaporation_mm"] = (
+        pd.to_numeric(weather["referentiegewasverdamping"], errors="coerce")
+        .clip(lower=0)
+        .div(10.0)
+    )
     return (
-        weather[["date", "rain_mm", "energy_proxy"]]
+        weather[["date", "rain_mm", "energy_proxy", "evaporation_mm"]]
         .dropna(subset=["date"])
         .drop_duplicates(subset="date", keep="last")
         .sort_values("date")

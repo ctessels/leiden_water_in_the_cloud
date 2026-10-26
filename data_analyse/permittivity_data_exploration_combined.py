@@ -174,7 +174,21 @@ def write_combined_permittivity_graph(
             label="Neerslag (mm)",
             zorder=1,
         )
-        bar_axis.set_ylabel("Neerslag (mm)")
+        y_label_right = "Neerslag (mm)"
+        if "evaporation_mm" in weather:
+            bar_axis.plot(
+                weather["date"],
+                weather["evaporation_mm"],
+                # Gestippeld en in een kleur buiten DISTINCT_COLORS, zodat de
+                # verdamping niet met een sensorlijn wordt verward.
+                linewidth=1.2,
+                linestyle="--",
+                color="#a0522d",
+                label="Referentieverdamping Makkink (mm)",
+                zorder=2,
+            )
+            y_label_right = "Neerslag / verdamping (mm)"
+        bar_axis.set_ylabel(y_label_right)
         # Houd de sensorlijnen boven de neerslagstaven.
         axis.set_zorder(bar_axis.get_zorder() + 1)
         axis.patch.set_visible(False)
@@ -319,7 +333,7 @@ def generate_combined_graph(
     ]
 
     title = (
-        f"Relatieve permittiviteit en neerslag per sensor - probe {probe_number} "
+        f"Relatieve permittiviteit, neerslag en verdamping per sensor - probe {probe_number} "
         f"({start or 'begin'} t/m {end or 'einde'})"
     )
     if normalisation != "geen":

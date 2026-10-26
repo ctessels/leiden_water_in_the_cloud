@@ -242,13 +242,15 @@ class PredictionModelTest(unittest.TestCase):
             directory = Path(directory)
             weather_path = directory / "weather.csv"
             weather_path.write_text(
-                "DATE,neerslag,zonneschijnduur,temperatuur,maxtemperatuur\n"
-                "2026-08-17,10,20,100,140\n",
+                "DATE,neerslag,zonneschijnduur,temperatuur,maxtemperatuur,"
+                "referentiegewasverdamping\n"
+                "2026-08-17,10,20,100,140,35\n",
                 encoding="utf-8",
             )
             historical = model.load_historical_weather(weather_path)
             self.assertEqual(historical.loc[0, "rain_mm"], 1.0)
             self.assertEqual(historical.loc[0, "energy_proxy"], 1440.0)
+            self.assertEqual(historical.loc[0, "evaporation_mm"], 3.5)
 
             database_path = directory / "forecast.db"
             with sqlite3.connect(database_path) as connection:
