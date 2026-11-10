@@ -24,12 +24,14 @@ leiden_water_in_the_cloud/
 │   ├── visualise_permittivity_training.py
 │   ├── permittivity_data_exploration.py
 │   ├── benchmark_archived_model.py
+│   ├── watering_effect_analysis.py
 │   ├── archived_model_training_config.json
 │   ├── model_artifacts/
 │   ├── data_exploration/
 │   ├── prediction_results/
 │   ├── prediction_visualisation/
 │   ├── training_visualisation/
+│   ├── watering_analysis/
 │   ├── helpers.py
 │   └── Onderzoeksresultaten.md
 ├── data_collection/
@@ -183,6 +185,16 @@ Na een geslaagde uitvoering opent een nieuwe tijdelijke browsergalerij met alle 
 
 De energieproxy is alleen een visuele indicator en verandert geen sensordata of modeluitkomst. De formule en eenheden staan in `Documentation/voorspellend_model.md`.
 
+9. Effect van watergeven analyseren:
+
+```bash
+python data_analyse/watering_effect_analysis.py
+```
+
+Het script zoekt in probes tot en met 30 cm naar snelle stijgingen van de permittiviteit op droge momenten. Daarvoor gebruikt het de 24-uursverandering, gecorrigeerd voor bodemtemperatuur en geschaald naar de ruis van de probe. Regen wordt uitgesloten met de KNMI-uurneerslag van Voorschoten en de dagneerslag van Valkenburg. Iedere stijging wordt geclassificeerd als `gieten waarschijnlijk`, `neerslag waarschijnlijk`, `regionaal signaal` (meerdere locaties tegelijk) of `zwak signaal`. Per event worden gift (Δθ volgens Topp en waterschijf over 20 cm), halfwaardetijd, EC-reactie ten opzichte van regen, tijdstip en weersomstandigheden berekend. Daarnaast toetst het script de bekende gietmomenten uit `Watergeven.py` en `Documentation/watergeven_log.xlsx` per probe, inclusief detectiegrens.
+
+De uitvoer staat in `data_analyse/watering_analysis`: `droge_stijgingen.csv`, `bekende_gietmomenten_controle.csv`, `regenrespons_per_probe.csv`, `samenvatting.txt` en vijf PNG's. De KNMI-uurneerslag wordt bij de eerste uitvoering opgehaald en als `knmi_uurgegevens_215.csv` bewaard. Gebruik `--refresh-hourly` om deze opnieuw op te halen en `--output-dir` voor een andere uitvoermap.
+
 ## Import en export
 
 `data_collection/ImportExport.py` ondersteunt handmatige rondes via Excel:
@@ -230,7 +242,7 @@ Controleer of de Python-scripts syntactisch geldig zijn:
 
 ```bash
 python -m compileall -q data_collection database_scripts Watergeven.py
-python -m py_compile data_analyse/benchmark_archived_model.py data_analyse/permittivity_data_exploration.py data_analyse/permittivity_prediction_model.py data_analyse/train_permittivity_prediction_model.py data_analyse/visualise_permittivity_training.py
+python -m py_compile data_analyse/benchmark_archived_model.py data_analyse/permittivity_data_exploration.py data_analyse/permittivity_prediction_model.py data_analyse/train_permittivity_prediction_model.py data_analyse/visualise_permittivity_training.py data_analyse/watering_effect_analysis.py
 ```
 
 Voer daarna de geautomatiseerde model- en visualisatietests uit:
